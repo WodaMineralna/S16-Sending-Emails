@@ -1,0 +1,30 @@
+const transporter = require("../config/nodemailer");
+
+const newError = require("../utils/newError");
+const required = require("../utils/requireEnvVar");
+
+const SENDER_MAIL = required("SENDGRID_SENDER_MAIL");
+const TESTER_RECEIVER_MAIL = required("SENDGRID_TESTER_RECEIVER_MAIL");
+const DEV_TESTING = required("SENDGRID_DEVELOPMENT_TESTING");
+
+async function sendMail(to, subject, html) {
+  if (!to || !subject || !html)
+    throw newError("Could not send a mail: Missing function arguments");
+
+  const receiver = DEV_TESTING ? TESTER_RECEIVER_MAIL : to;
+
+  try {
+    await transporter.sendMail({
+      to: receiver,
+      from: SENDER_MAIL,
+      subject,
+      html,
+    });
+    console.log("Email was sent to:", receiver); // DEBUGGING
+    return;
+  } catch (error) {
+    throw newError("An error occured while sending an email", error);
+  }
+}
+
+module.exports = sendMail;
